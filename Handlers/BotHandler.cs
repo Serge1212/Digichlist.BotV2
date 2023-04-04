@@ -28,6 +28,15 @@ namespace Digichlist.Bot.Handlers
         }
 
         /// <summary>
+        /// Handles errors while polling.
+        /// </summary>
+        public Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+        {
+            Console.Error.WriteLine(exception.Message);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
         /// Entry point of getting Telegram messages.
         /// </summary>
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
@@ -59,14 +68,31 @@ namespace Digichlist.Bot.Handlers
                 await botClient.SendTextMessageAsync(chatId, $"There is no such available command - {commandText}. Please take a look at the menu.");
             }
         }
-
-        /// <summary>
-        /// Handles errors while polling.
-        /// </summary>
-        public Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+        async Task<bool> ValidateMessageAsync(ITelegramBotClient botClient, Update update)
         {
-            Console.Error.WriteLine(exception.Message);
-            return Task.CompletedTask;
+            var messageInfo = JsonSerializer.Serialize(update.Message);
+            if (
+                update is null || // no info came at all.
+                update.Message is null || // no message info.
+                update.Message.Chat is null || // no chat info.
+                update.Message.Chat.Id < 0 // no chat identifier.
+                )
+            {
+                _logger.LogError("Some of the information is missing: {messageInfo}", messageInfo);
+                return false;
+            }
+            else if (
+                string.IsNullOrWhiteSpace(update.Message.Text) || // no command was passed.
+                update.Message.Text.Split(' ').Length > 1 // the command format is definitely not correct.
+                )
+            {
+                _logger.LogError("The command message was incorrect: {messageInfo}", messageInfo);
+                var chatId = update.Message.Chat.Id;
+                await botClient.SendTextMessageAsync(chatId, "Please send a valid command. You may find them in the menu");
+                return false;
+            }
+
+            return true;
         }
 
         IBotCommand GetCommand(string? command) => command switch
@@ -78,33 +104,6 @@ namespace Digichlist.Bot.Handlers
         IBotCommand ResolveCommand<T>() where T : IBotCommand
         {
             return (IBotCommand)_services.GetService(typeof(T));
-        }
-
-        async Task<bool> ValidateMessageAsync(ITelegramBotClient botClient, Update update)
-        {
-            var messageInfo = JsonSerializer.Serialize(update.Message);
-            if(
-                update is null || // no info came at all.
-                update.Message is null || // no message info.
-                update.Message.Chat is null || // no chat info.
-                update.Message.Chat.Id < 0 // no chat identifier.
-                )
-            {
-                _logger.LogError("Some of the information is missing: {messageInfo}", messageInfo);
-                return false;
-            }
-            else if(
-                string.IsNullOrWhiteSpace(update.Message.Text) || // no command was passed.
-                update.Message.Text.Split(' ').Length > 1 // the command format is definitely
-                )
-            {
-                _logger.LogError("The command message was incorrect: {messageInfo}", messageInfo);
-                var chatId = update.Message.Chat.Id;
-                await botClient.SendTextMessageAsync(chatId, "Please send a valid command. You may find them in the menu");
-                return false;
-            }
-
-            return true;
         }
     }
 }
