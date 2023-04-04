@@ -13,7 +13,7 @@
         /// <summary>
         /// The telegram chat identifier.
         /// </summary>
-        public int ChatId { get; set; }
+        public long ChatId { get; set; }
 
         /// <summary>
         /// The user's first name.

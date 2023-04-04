@@ -41,7 +41,7 @@ namespace Digichlist.Bot.Handlers
         /// </summary>
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            // Exit when cancellation is requested.
+            // Gracefully exit when cancellation is requested.
             if(cancellationToken.IsCancellationRequested)
             {
                 return;
@@ -98,6 +98,7 @@ namespace Digichlist.Bot.Handlers
         IBotCommand GetCommand(string? command) => command switch
         {
             CommandConstants.START => ResolveCommand<StartCommand>(),
+            CommandConstants.REGISTER_ME => ResolveCommand<RegisterMeCommand>(),
             _ => throw new ArgumentOutOfRangeException(nameof(command)),
         };
 

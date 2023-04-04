@@ -16,6 +16,7 @@ var builder = new HostBuilder()
         services.AddSingleton<IUpdateHandler, BotHandler>();
         // Commands.
         services.AddTransient<StartCommand>();
+        services.AddTransient<RegisterMeCommand>();
     });
 
 var host = builder.Build();
