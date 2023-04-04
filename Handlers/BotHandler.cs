@@ -1,11 +1,32 @@
-﻿using Telegram.Bot;
+﻿using Digichlist.Bot.Commands;
+using Digichlist.Bot.Configuration;
+using Digichlist.Bot.Interfaces;
+using Digichlist.Bot.Models;
+using Microsoft.Extensions.Logging;
+using System.Text.Json;
+using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 
 namespace Digichlist.Bot.Handlers
 {
+    /// <summary>
+    /// The main class that handles all incoming messages from bot.
+    /// </summary>
     public class BotHandler : IUpdateHandler
     {
+        readonly IServiceProvider _services;
+        readonly ILogger _logger;
+
+        public BotHandler(
+            IServiceProvider services,
+            ILogger<BotHandler> logger
+            )
+        {
+            _services = services;
+            _logger = logger;
+        }
+
         /// <summary>
         /// Entry point of getting Telegram messages.
         /// </summary>
@@ -17,11 +38,25 @@ namespace Digichlist.Bot.Handlers
                 return;
             }
 
-            // Temp stub.
-            if (update.Message is not null)
+            // Exit when the incoming information is invalid/missing.
+            if(!(await ValidateMessageAsync(botClient, update)))
             {
-                var chatId = update.Message.Chat.Id;
-                await botClient.SendTextMessageAsync(chatId, "I know you're here");
+                return;
+            }
+
+            var chatId = update!.Message!.Chat.Id;
+            var commandText = update!.Message!.Text;
+
+            try
+            {
+                var message = BotMessage.ToModel(update);
+                var command = GetCommand(commandText);
+                await command.Process(message);
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                _logger.LogError("Error while command execution: {message}", ex.Message);
+                await botClient.SendTextMessageAsync(chatId, $"There is no such available command - {commandText}. Please take a look at the menu.");
             }
         }
 
@@ -32,6 +67,44 @@ namespace Digichlist.Bot.Handlers
         {
             Console.Error.WriteLine(exception.Message);
             return Task.CompletedTask;
+        }
+
+        IBotCommand GetCommand(string? command) => command switch
+        {
+            CommandConstants.START => ResolveCommand<StartCommand>(),
+            _ => throw new ArgumentOutOfRangeException(nameof(command)),
+        };
+
+        IBotCommand ResolveCommand<T>() where T : IBotCommand
+        {
+            return (IBotCommand)_services.GetService(typeof(T));
+        }
+
+        async Task<bool> ValidateMessageAsync(ITelegramBotClient botClient, Update update)
+        {
+            var messageInfo = JsonSerializer.Serialize(update.Message);
+            if(
+                update is null || // no info came at all.
+                update.Message is null || // no message info.
+                update.Message.Chat is null || // no chat info.
+                update.Message.Chat.Id < 0 // no chat identifier.
+                )
+            {
+                _logger.LogError("Some of the information is missing: {messageInfo}", messageInfo);
+                return false;
+            }
+            else if(
+                string.IsNullOrWhiteSpace(update.Message.Text) || // no command was passed.
+                update.Message.Text.Split(' ').Length > 1 // the command format is definitely
+                )
+            {
+                _logger.LogError("The command message was incorrect: {messageInfo}", messageInfo);
+                var chatId = update.Message.Chat.Id;
+                await botClient.SendTextMessageAsync(chatId, "Please send a valid command. You may find them in the menu");
+                return false;
+            }
+
+            return true;
         }
     }
 }
