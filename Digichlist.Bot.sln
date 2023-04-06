@@ -5,7 +5,7 @@ VisualStudioVersion = 17.1.31903.286
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Digichlist.Bot", "Digichlist.Bot.csproj", "{B41EE56C-A73A-4281-A953-BFFBABE0F6C8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Digichlist.Bot.Tests", "..\Digichlist.Bot.Tests\Digichlist.Bot.Tests.csproj", "{173E43C3-3905-49AC-9FC8-8449AC10BA4D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Digichlist.Bot.Test", "Digichlist.Bot.Test\Digichlist.Bot.Test.csproj", "{3E896914-E82B-45AB-9217-93BC464C08DE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{B41EE56C-A73A-4281-A953-BFFBABE0F6C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B41EE56C-A73A-4281-A953-BFFBABE0F6C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B41EE56C-A73A-4281-A953-BFFBABE0F6C8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{173E43C3-3905-49AC-9FC8-8449AC10BA4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{173E43C3-3905-49AC-9FC8-8449AC10BA4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{173E43C3-3905-49AC-9FC8-8449AC10BA4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{173E43C3-3905-49AC-9FC8-8449AC10BA4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E896914-E82B-45AB-9217-93BC464C08DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E896914-E82B-45AB-9217-93BC464C08DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E896914-E82B-45AB-9217-93BC464C08DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E896914-E82B-45AB-9217-93BC464C08DE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
