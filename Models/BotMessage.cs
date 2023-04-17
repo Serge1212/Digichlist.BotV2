@@ -10,8 +10,9 @@ namespace Digichlist.Bot.Models
         public long ChatId { get; set; }
 
         /// <summary>
-        /// Temp prop. Will be removed until all props are defined.
+        /// Contains all necessary info coming from the user's message.
         /// </summary>
+        [Obsolete("Temp prop. Will be removed until all props are defined.")]
         public Message Message { get; set; }
 
 

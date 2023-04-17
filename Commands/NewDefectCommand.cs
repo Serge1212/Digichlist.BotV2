@@ -16,9 +16,9 @@ namespace Digichlist.Bot.Commands
 
         public async Task Process(BotMessage message)
         {
-            if (!(await ValidateUserAsync(message.ChatId)) {
-
-            }
+            //if (!(await ValidateUserAsync(message.ChatId)) {
+            //
+            //}
         }
 
         private async Task<bool> ValidateUserAsync(long chatId)

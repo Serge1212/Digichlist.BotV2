@@ -47,13 +47,8 @@
         public Role? Role { get; set; }
 
         /// <summary>
-        /// Defects published by this user.
-        /// </summary>
-        public List<Defect> Defects { get; set; } = new(); // TODO: Most likely it's an excess info. Removing to be considered.
-
-        /// <summary>
         /// The defects assigned to this user.
         /// </summary>
-        public List<AssignedDefect> AssignedDefects { get; set; } = new();
+        public List<Defect> Defects { get; set; } = new();
     }
 }

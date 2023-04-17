@@ -65,12 +65,12 @@ namespace Digichlist.Bot.Handlers
             catch (ArgumentOutOfRangeException ex)
             {
                 _logger.LogError("Error while command execution: {message}", ex.Message);
-                await botClient.SendTextMessageAsync(chatId, $"There is no such available command - {commandText}. Please take a look at the menu.");
+                await botClient.SendTextMessageAsync(chatId, $"There is no such available command - {commandText}. Please take a look at the menu.", cancellationToken: cancellationToken);
             }
         }
         async Task<bool> ValidateMessageAsync(ITelegramBotClient botClient, Update update)
         {
-            var messageInfo = JsonSerializer.Serialize(update.Message);
+            var messageInfo = JsonSerializer.Serialize(update?.Message);
             if (
                 update is null || // no info came at all.
                 update.Message is null || // no message info.
