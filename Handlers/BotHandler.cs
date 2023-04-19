@@ -60,7 +60,7 @@ namespace Digichlist.Bot.Handlers
             {
                 var message = BotMessage.ToModel(update);
                 var command = GetCommand(commandText);
-                await command.ProcessAsync(message);
+                await command.ProcessAsync(message, cancellationToken);
             }
             catch (ArgumentOutOfRangeException ex)
             {

@@ -14,7 +14,7 @@ namespace Digichlist.Bot.Commands
             _botClient = botClient;
         }
 
-        public async Task ProcessAsync(BotMessage message)
+        public async Task ProcessAsync(BotMessage message, CancellationToken cancellationToken)
         {
             //if (!(await ValidateUserAsync(message.ChatId)) {
             //

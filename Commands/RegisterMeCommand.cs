@@ -21,8 +21,13 @@ namespace Digichlist.Bot.Commands
         }
 
         /// <inheritdoc />
-        public async Task ProcessAsync(BotMessage message)
+        public async Task ProcessAsync(BotMessage message, CancellationToken cancellationToken)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
             var chatId = message.ChatId;
 
             var user = await _userRepository.GetByIdAsync(chatId);
@@ -32,15 +37,15 @@ namespace Digichlist.Bot.Commands
                 // Save user to the database.
                 // This is the only place where a user can be saved to the database.
                 await AddUserAsync(message);
-                await _botClient.SendTextMessageAsync(chatId, "The registration request was successfully sent!\n You'll be notified as soon as possible!");
+                await _botClient.SendTextMessageAsync(chatId, "The registration request was successfully sent!\n You'll be notified as soon as possible!", cancellationToken: cancellationToken);
             }
             else if (user.IsRegistered)
             {
-                await _botClient.SendTextMessageAsync(chatId, "You are already registered");
+                await _botClient.SendTextMessageAsync(chatId, "You are already registered", cancellationToken: cancellationToken);
             }
             else
             {
-                await _botClient.SendTextMessageAsync(chatId, "You've already requested the registration. Our admins are working on it.");
+                await _botClient.SendTextMessageAsync(chatId, "You've already requested the registration. Our admins are working on it.", cancellationToken: cancellationToken);
             }
         }
 

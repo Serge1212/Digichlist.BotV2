@@ -17,13 +17,18 @@ namespace Digichlist.Bot.Commands
         }
 
         /// <inheritdoc />
-        public async Task ProcessAsync(BotMessage message)
+        public async Task ProcessAsync(BotMessage message, CancellationToken cancellationToken)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
             var welcomeMessage = "Hi! Welcome to the Digichlist Bot. This bot was created to help you to send defects in a hotel that you found.\n\n" +
             "If you are new to this bot and want to get started, please enter the /registerme command so that our administration will review your request as soon as possible.\n\n" +
             "Press 'Menu' button to see all features.";
 
-            await _botClient.SendTextMessageAsync(message.ChatId, welcomeMessage);
+            await _botClient.SendTextMessageAsync(message.ChatId, welcomeMessage, cancellationToken: cancellationToken);
         }
     }
 }

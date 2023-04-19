@@ -49,6 +49,6 @@
         /// <summary>
         /// The defects assigned to this user.
         /// </summary>
-        public List<Defect> Defects { get; set; } = new();
+        public List<Defect>? Defects { get; set; } = new();
     }
 }
