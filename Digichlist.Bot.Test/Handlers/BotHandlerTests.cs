@@ -28,7 +28,7 @@ namespace Digichlist.Bot.Test.Handlers
 
             var dummyCommandHandler = new Mock<IBotCommand>();
             dummyCommandHandler
-                .Setup(c => c.Process(It.IsAny<BotMessage>()));
+                .Setup(c => c.ProcessAsync(It.IsAny<BotMessage>()));
 
             _serviceProviderMock
                 .Setup(provider => provider.GetService(It.IsAny<Type>()))

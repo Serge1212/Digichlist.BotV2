@@ -60,7 +60,7 @@ namespace Digichlist.Bot.Handlers
             {
                 var message = BotMessage.ToModel(update);
                 var command = GetCommand(commandText);
-                await command.Process(message);
+                await command.ProcessAsync(message);
             }
             catch (ArgumentOutOfRangeException ex)
             {
@@ -68,9 +68,11 @@ namespace Digichlist.Bot.Handlers
                 await botClient.SendTextMessageAsync(chatId, $"There is no such available command - {commandText}. Please take a look at the menu.", cancellationToken: cancellationToken);
             }
         }
+
         async Task<bool> ValidateMessageAsync(ITelegramBotClient botClient, Update update)
         {
             var messageInfo = JsonSerializer.Serialize(update?.Message);
+            // High-level validation.
             if (
                 update is null || // no info came at all.
                 update.Message is null || // no message info.
@@ -81,7 +83,9 @@ namespace Digichlist.Bot.Handlers
                 _logger.LogError("Some of the information is missing: {messageInfo}", messageInfo);
                 return false;
             }
-            else if (
+
+            // Low-level validation.
+            if (
                 string.IsNullOrWhiteSpace(update.Message.Text) || // no command was passed.
                 update.Message.Text.Split(' ').Length > 1 // the command format is definitely not correct.
                 )

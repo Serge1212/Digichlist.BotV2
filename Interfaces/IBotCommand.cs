@@ -10,6 +10,6 @@ namespace Digichlist.Bot.Interfaces
         /// <summary>
         /// Starts processing the actual commands.
         /// </summary>
-        Task Process(BotMessage message);
+        Task ProcessAsync(BotMessage message);
     }
 }

@@ -12,36 +12,39 @@ namespace Digichlist.Bot.Commands
     public class RegisterMeCommand : IBotCommand
     {
         readonly ITelegramBotClient _botClient;
+        readonly IUserRepository _userRepository;
 
-        public RegisterMeCommand(ITelegramBotClient botClient)
+        public RegisterMeCommand(ITelegramBotClient botClient, IUserRepository userRepository)
         {
             _botClient = botClient;
+            _userRepository = userRepository;
         }
 
         /// <inheritdoc />
-        public async Task Process(BotMessage message)
+        public async Task ProcessAsync(BotMessage message)
         {
             var chatId = message.ChatId;
 
-            var user = new User(); // TODO: Temp Stub.
+            var user = await _userRepository.GetByIdAsync(chatId);
 
-            //TODO: This could be moved to another place once privileges for users are done for the Telegram bot.
             if (user is null)
             {
-                await AddUserAsync(message); // Save user to the database. This is the only place where a user can be saved to the database.
+                // Save user to the database.
+                // This is the only place where a user can be saved to the database.
+                await AddUserAsync(message);
                 await _botClient.SendTextMessageAsync(chatId, "The registration request was successfully sent!\n You'll be notified as soon as possible!");
             }
-            else if (!user.IsRegistered)
-            {
-                await _botClient.SendTextMessageAsync(chatId, "You've already requested the registration. Our admins are working on it.");
-            }
-            else
+            else if (user.IsRegistered)
             {
                 await _botClient.SendTextMessageAsync(chatId, "You are already registered");
             }
+            else
+            {
+                await _botClient.SendTextMessageAsync(chatId, "You've already requested the registration. Our admins are working on it.");
+            }
         }
 
-        Task AddUserAsync(BotMessage message)
+        async Task AddUserAsync(BotMessage message)
         {
             var user = new User
             {
@@ -51,8 +54,7 @@ namespace Digichlist.Bot.Commands
                 ChatId = message.ChatId
             };
 
-            //TODO: Save user to a database;
-            return Task.CompletedTask;
+            await _userRepository.SaveUserAsync(user);
         }
     }
 }
