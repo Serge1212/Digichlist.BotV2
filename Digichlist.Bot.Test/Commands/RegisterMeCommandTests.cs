@@ -43,14 +43,14 @@ namespace Digichlist.Bot.Test.Commands
             };
 
             _userRepositoryMock
-                .Setup(u => u.GetByIdAsync(It.IsAny<long>()))
+                .Setup(u => u.GetByChatIdAsync(It.IsAny<long>()))
                 .ReturnsAsync(() => null);
 
             // Act.
             await _command.ProcessAsync(message, CancellationToken.None);
 
             // Assert.
-            _userRepositoryMock.Verify(u => u.GetByIdAsync(It.Is<long>(i => i == expectedChatId)));
+            _userRepositoryMock.Verify(u => u.GetByChatIdAsync(It.Is<long>(i => i == expectedChatId)));
             _userRepositoryMock.Verify(u => u.SaveUserAsync(It.IsAny<User>()));
             _botClientMock.Verify(b => b.MakeRequestAsync(It.Is<SendMessageRequest>(m => m.ChatId == expectedChatId && m.Text.Contains(expectedMessagePart)), CancellationToken.None));
         }
@@ -68,7 +68,7 @@ namespace Digichlist.Bot.Test.Commands
             };
 
             _userRepositoryMock
-                .Setup(u => u.GetByIdAsync(It.IsAny<long>()))
+                .Setup(u => u.GetByChatIdAsync(It.IsAny<long>()))
                 .ReturnsAsync(() => new User { IsRegistered = false }); // User exists in db, but registration is not confirmed.
 
             // Act.
@@ -92,7 +92,7 @@ namespace Digichlist.Bot.Test.Commands
             };
 
             _userRepositoryMock
-                .Setup(u => u.GetByIdAsync(It.IsAny<long>()))
+                .Setup(u => u.GetByChatIdAsync(It.IsAny<long>()))
                 .ReturnsAsync(() => new User { IsRegistered = true });
 
             // Act.
@@ -114,7 +114,7 @@ namespace Digichlist.Bot.Test.Commands
             await _command.ProcessAsync(It.IsAny<BotMessage>(), source.Token);
 
             // Assert.
-            _userRepositoryMock.Verify(u => u.GetByIdAsync(It.IsAny<long>()), Times.Never);
+            _userRepositoryMock.Verify(u => u.GetByChatIdAsync(It.IsAny<long>()), Times.Never);
             _userRepositoryMock.Verify(u => u.SaveUserAsync(It.IsAny<User>()), Times.Never);
             _botClientMock.Verify(b => b.MakeRequestAsync(It.IsAny<SendMessageRequest>(), It.IsAny<CancellationToken>()), Times.Never);
         }

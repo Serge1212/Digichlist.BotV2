@@ -1,7 +1,5 @@
 ﻿using Digichlist.Bot.Context;
-using Digichlist.Bot.Interfaces;
-using Digichlist.Bot.Models.Entities;
-using Microsoft.EntityFrameworkCore;
+using User = Digichlist.Bot.Models.Entities.User;
 
 namespace Digichlist.Bot.Repositories
 {
@@ -18,7 +16,7 @@ namespace Digichlist.Bot.Repositories
         }
 
         /// <inheritdoc />
-        public async Task<User?> GetByIdAsync(long chatId) => await _context.Users.SingleOrDefaultAsync(u => u.ChatId == chatId);
+        public async Task<User?> GetByChatIdAsync(long chatId) => await _context.Users.SingleOrDefaultAsync(u => u.ChatId == chatId);
 
         public async Task SaveUserAsync(User user)
         {

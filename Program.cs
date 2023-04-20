@@ -1,15 +1,5 @@
-﻿using Digichlist.Bot.Commands;
-using Digichlist.Bot.Configuration;
-using Digichlist.Bot.Context;
-using Digichlist.Bot.Handlers;
-using Digichlist.Bot.Interfaces;
-using Digichlist.Bot.Repositories;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Telegram.Bot;
-using Telegram.Bot.Polling;
 
 var builder = new HostBuilder()
     .ConfigureServices((context, services) =>
@@ -17,12 +7,16 @@ var builder = new HostBuilder()
         services.AddLogging(cfg => cfg.AddConsole());
         var botToken = Environment.GetEnvironmentVariable("DigichlistV2", EnvironmentVariableTarget.User) ?? throw new ArgumentException("Missing API token for the Telegram Bot.");
         services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(botToken));
-        services.AddSingleton<IUpdateHandler, BotHandler>();
+        // Handlers.
+        services.AddSingleton<BotHandler>();
+        services.AddScoped<NewDefectCommandHandler>();
         // Commands.
         services.AddTransient<StartCommand>();
         services.AddTransient<RegisterMeCommand>();
+        services.AddTransient<NewDefectCommand>();
         // Repos.
         services.AddTransient<IUserRepository, UserRepository>();
+        services.AddTransient<IDefectRepository, DefectRepository>();
 
         services.AddDbContext<DigichlistContext>(options =>
         {
@@ -61,14 +55,20 @@ var services = serviceScope.ServiceProvider;
 try
 {
     var botClient = services.GetService<ITelegramBotClient>();
-    var updateHandler = services.GetService<IUpdateHandler>();
+    var updateHandler = services.GetService<BotHandler>();
 
     if (botClient is null || updateHandler is null)
     {
         throw new InvalidOperationException("Could not configure the bot handlers.");
     }
 
-    botClient.StartReceiving(updateHandler);
+    // Define receiving options.
+    var receiverOps = new ReceiverOptions
+    {
+        ThrowPendingUpdates = true, // Will ignore all preceding messages.
+    };
+
+    botClient.StartReceiving(updateHandler, receiverOptions: receiverOps);
 
     Console.WriteLine($"{Constants.APP_NAME} is all set.");
     Console.ReadKey();

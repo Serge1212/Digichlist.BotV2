@@ -1,7 +1,4 @@
-﻿using Digichlist.Bot.Interfaces;
-using Digichlist.Bot.Models;
-using Digichlist.Bot.Models.Entities;
-using Telegram.Bot;
+﻿using User = Digichlist.Bot.Models.Entities.User;
 
 namespace Digichlist.Bot.Commands
 {
@@ -30,7 +27,7 @@ namespace Digichlist.Bot.Commands
 
             var chatId = message.ChatId;
 
-            var user = await _userRepository.GetByIdAsync(chatId);
+            var user = await _userRepository.GetByChatIdAsync(chatId);
 
             if (user is null)
             {
@@ -45,7 +42,7 @@ namespace Digichlist.Bot.Commands
             }
             else
             {
-                await _botClient.SendTextMessageAsync(chatId, "You've already requested the registration. Our admins are working on it.", cancellationToken: cancellationToken);
+                var msg = await _botClient.SendTextMessageAsync(chatId, "You've already requested the registration. Our admins are working on it.", cancellationToken: cancellationToken);
             }
         }
 

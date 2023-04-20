@@ -1,6 +1,4 @@
-﻿using Digichlist.Bot.Models;
-
-namespace Digichlist.Bot.Interfaces
+﻿namespace Digichlist.Bot.Interfaces
 {
     /// <summary>
     /// Generalized command contract.

@@ -1,8 +1,4 @@
-﻿using Digichlist.Bot.Interfaces;
-using Digichlist.Bot.Models;
-using Telegram.Bot;
-
-namespace Digichlist.Bot.Commands
+﻿namespace Digichlist.Bot.Commands
 {
     /// <summary>
     /// The Start command that works for <see cref="CommandConstants.START"/> command.

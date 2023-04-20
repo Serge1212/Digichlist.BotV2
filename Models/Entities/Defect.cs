@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Digichlist.Bot.Models.Entities
+﻿namespace Digichlist.Bot.Models.Entities
 {
     /// <summary>
     /// The entity that represents the defect.
@@ -30,7 +28,7 @@ namespace Digichlist.Bot.Models.Entities
        /// <summary>
        /// The name of the creator.
        /// </summary>
-       public string CreatedBy { get; set; }
+       public string? CreatedBy { get; set; }
        
        /// <summary>
        /// The date and time the defect was closed.

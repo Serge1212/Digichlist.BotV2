@@ -1,4 +1,4 @@
-﻿using Digichlist.Bot.Models.Entities;
+﻿using User = Digichlist.Bot.Models.Entities.User;
 
 namespace Digichlist.Bot.Interfaces
 {
@@ -10,7 +10,7 @@ namespace Digichlist.Bot.Interfaces
         /// <summary>
         /// Gets the user info by specified identifier.
         /// </summary>
-        Task<User?> GetByIdAsync(long chatId);
+        Task<User?> GetByChatIdAsync(long chatId);
 
         /// <summary>
         /// Saves a brand new user.

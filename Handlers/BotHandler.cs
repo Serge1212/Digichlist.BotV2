@@ -1,14 +1,4 @@
-﻿using Digichlist.Bot.Commands;
-using Digichlist.Bot.Configuration;
-using Digichlist.Bot.Interfaces;
-using Digichlist.Bot.Models;
-using Microsoft.Extensions.Logging;
-using System.Text.Json;
-using Telegram.Bot;
-using Telegram.Bot.Polling;
-using Telegram.Bot.Types;
-
-namespace Digichlist.Bot.Handlers
+﻿namespace Digichlist.Bot.Handlers
 {
     /// <summary>
     /// The main class that handles all incoming messages from bot.
@@ -103,6 +93,7 @@ namespace Digichlist.Bot.Handlers
         {
             CommandConstants.START => ResolveCommand<StartCommand>(),
             CommandConstants.REGISTER_ME => ResolveCommand<RegisterMeCommand>(),
+            CommandConstants.NEW_DEFECT => ResolveCommand<NewDefectCommand>(),
             _ => throw new ArgumentOutOfRangeException(nameof(command)),
         };
 

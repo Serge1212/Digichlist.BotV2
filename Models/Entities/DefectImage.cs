@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Digichlist.Bot.Models.Entities
+﻿namespace Digichlist.Bot.Models.Entities
 {
     /// <summary>
     /// Represents images for specified defects.

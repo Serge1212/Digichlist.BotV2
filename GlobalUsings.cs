@@ -1,0 +1,16 @@
+﻿global using Digichlist.Bot.Commands;
+global using Digichlist.Bot.Configuration;
+global using Digichlist.Bot.Interfaces;
+global using Digichlist.Bot.Models;
+global using Microsoft.Extensions.Logging;
+global using System.Text.Json;
+global using Telegram.Bot;
+global using Telegram.Bot.Polling;
+global using Telegram.Bot.Types;
+global using Digichlist.Bot.Models.Entities;
+global using Microsoft.EntityFrameworkCore;
+global using Digichlist.Bot.Context;
+global using System.ComponentModel.DataAnnotations.Schema;
+global using Digichlist.Bot.Handlers;
+global using Digichlist.Bot.Handlers.Commands;
+global using Digichlist.Bot.Repositories;

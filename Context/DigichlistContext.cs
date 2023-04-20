@@ -1,5 +1,4 @@
-﻿using Digichlist.Bot.Models.Entities;
-using Microsoft.EntityFrameworkCore;
+﻿using User = Digichlist.Bot.Models.Entities.User;
 
 namespace Digichlist.Bot.Context
 {
