@@ -50,5 +50,10 @@
         /// The defects assigned to this user.
         /// </summary>
         public List<Defect>? Defects { get; set; } = new();
+
+        public string GetName()
+        {
+            return $"{FirstName ?? "N/A"} {LastName?? "N/A"}, {Username ?? "N/A"}";
+        }
     }
 }

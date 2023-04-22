@@ -75,9 +75,10 @@
             }
 
             // Low-level validation.
+            var message = update.Message.Text;
             if (
-                string.IsNullOrWhiteSpace(update.Message.Text) || // no command was passed.
-                update.Message.Text.Split(' ').Length > 1 // the command format is definitely not correct.
+                string.IsNullOrWhiteSpace(message) || // no command was passed.
+                (message.Split(' ').Length > 1 && !message.Contains(CommandConstants.NEW_DEFECT)) // the command format is definitely not correct.
                 )
             {
                 _logger.LogError("The command message was incorrect: {messageInfo}", messageInfo);
@@ -93,7 +94,7 @@
         {
             CommandConstants.START => ResolveCommand<StartCommand>(),
             CommandConstants.REGISTER_ME => ResolveCommand<RegisterMeCommand>(),
-            CommandConstants.NEW_DEFECT => ResolveCommand<NewDefectCommand>(),
+            var c when c.Contains(CommandConstants.NEW_DEFECT) => ResolveCommand<NewDefectCommand>(),
             _ => throw new ArgumentOutOfRangeException(nameof(command)),
         };
 

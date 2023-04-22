@@ -9,20 +9,16 @@
         readonly ITelegramBotClient _botClient;
         readonly IUserRepository _userRepository;
         readonly IDefectRepository _defectRepository;
-        readonly IServiceProvider _services;
-
 
         public NewDefectCommand(
             ITelegramBotClient botClient,
             IUserRepository userRepository,
-            IDefectRepository defectRepository,
-            IServiceProvider services
+            IDefectRepository defectRepository
             )
         {
             _botClient = botClient;
             _userRepository = userRepository;
             _defectRepository = defectRepository;
-            _services = services;
         }
 
         /// <inheritdoc />
@@ -31,18 +27,42 @@
             var chatId = message.ChatId;
             var user = await _userRepository.GetByChatIdAsync(chatId);
 
-            //if (user?.Role is Role role && !role.CanAdd)
-            //{
-            //    await _botClient.SendTextMessageAsync(
-            //        chatId,
-            //        "Unfortunately your role does not have a permission to publish defects or the role is missing.",
-            //        cancellationToken: cancellationToken);
-            //}
-            var handler = (IUpdateHandler)_services.GetService(typeof(NewDefectCommandHandler));
-            
-            //TODO: REMAKE BELOW
-            // Create delegate handlers here, so we can pass users, defects and ids.
-            await _botClient.ReceiveAsync(handler);
+            if (user?.Role is null || !user.Role.CanAdd)
+            {
+                await _botClient.SendTextMessageAsync(
+                    chatId,
+                    "Unfortunately your role does not have a permission to publish defects or the role is missing.",
+                    cancellationToken: cancellationToken);
+                return;
+            }
+
+            var incomingMsg = message.Message.Text;
+            var defectInfo = incomingMsg.Split(' ');
+            var hasRoomNumber = int.TryParse(defectInfo[1], out int roomNumber);
+            var description = string.Join(' ', defectInfo[2..]);
+
+
+            if (!hasRoomNumber ||
+                defectInfo.Length < 3 ||
+                string.IsNullOrWhiteSpace(description)
+                )
+            {
+                await _botClient.SendTextMessageAsync(
+                    chatId,
+                    "Please send a new defect in a following format: /newdefect [room number] [description]",
+                    cancellationToken: cancellationToken);
+                return;
+            }
+
+            var defect = new Defect
+            {
+                RoomNumber = roomNumber,
+                Description = description,
+                CreatedBy = user.GetName(),
+                CreatedAt = DateTime.Now,
+            };
+
+            await _defectRepository.SaveAsync(defect);
         }
     }
 }

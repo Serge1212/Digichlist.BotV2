@@ -12,5 +12,4 @@ global using Microsoft.EntityFrameworkCore;
 global using Digichlist.Bot.Context;
 global using System.ComponentModel.DataAnnotations.Schema;
 global using Digichlist.Bot.Handlers;
-global using Digichlist.Bot.Handlers.Commands;
 global using Digichlist.Bot.Repositories;

@@ -8,8 +8,7 @@ var builder = new HostBuilder()
         var botToken = Environment.GetEnvironmentVariable("DigichlistV2", EnvironmentVariableTarget.User) ?? throw new ArgumentException("Missing API token for the Telegram Bot.");
         services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(botToken));
         // Handlers.
-        services.AddSingleton<BotHandler>();
-        services.AddScoped<NewDefectCommandHandler>();
+        services.AddTransient<BotHandler>();
         // Commands.
         services.AddTransient<StartCommand>();
         services.AddTransient<RegisterMeCommand>();
