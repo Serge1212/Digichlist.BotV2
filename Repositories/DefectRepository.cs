@@ -9,6 +9,13 @@
             _context = context;
         }
 
+        public IEnumerable<Defect> GetDefectsByChatId(long chatId)
+        {
+            return _context.Defects
+                .Include(d => d.AssignedWorker)
+                .Where(d => d.AssignedWorker.ChatId == chatId && d.ClosedAt == null);
+        }
+
         public async Task SaveAsync(Defect defect)
         {
             await _context.Defects.AddAsync(defect);

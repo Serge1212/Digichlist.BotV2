@@ -13,6 +13,7 @@ var builder = new HostBuilder()
         services.AddTransient<StartCommand>();
         services.AddTransient<RegisterMeCommand>();
         services.AddTransient<NewDefectCommand>();
+        services.AddTransient<SetDefectStatusCommand>();
         // Repos.
         services.AddTransient<IUserRepository, UserRepository>();
         services.AddTransient<IDefectRepository, DefectRepository>();
@@ -65,6 +66,7 @@ try
     var receiverOps = new ReceiverOptions
     {
         ThrowPendingUpdates = true, // Will ignore all preceding messages.
+        AllowedUpdates = AllowedUpdates.GetAllowedUpdates() // Define updates that this bot can handle.
     };
 
     botClient.StartReceiving(updateHandler, receiverOptions: receiverOps);

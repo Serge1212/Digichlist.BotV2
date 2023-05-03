@@ -28,6 +28,11 @@ namespace Digichlist.Bot.Context
         public DbSet<DefectImage>? DefectImages { get; set; }
 
         /// <summary>
+        /// The db set that reflects the state of CommandTaskInfo table.
+        /// </summary>
+        public DbSet<CommandTaskInfo> CommandTasksInfo { get; set; }
+
+        /// <summary>
         /// Initializes the digichlist db context.
         /// </summary>
         /// <param name="options"></param>

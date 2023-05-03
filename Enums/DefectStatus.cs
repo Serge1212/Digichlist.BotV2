@@ -6,6 +6,11 @@
     public enum DefectStatus
     {
         /// <summary>
+        /// Technical status. Covers the cases when status is missing.
+        /// </summary>
+        Undefined = 0,
+
+        /// <summary>
         /// The defect is published.
         /// </summary>
         Opened = 1,

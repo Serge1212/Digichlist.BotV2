@@ -36,7 +36,7 @@
                 return;
             }
 
-            var incomingMsg = message.Message.Text;
+            var incomingMsg = message.Text;
             var defectInfo = incomingMsg.Split(' ');
             var hasRoomNumber = int.TryParse(defectInfo[1], out int roomNumber);
             var description = string.Join(' ', defectInfo[2..]);

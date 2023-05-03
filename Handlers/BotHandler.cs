@@ -38,36 +38,67 @@
             }
 
             // Exit when the incoming information is invalid/missing.
-            if(!(await ValidateMessageAsync(botClient, update)))
+            if(!await ValidateMessageAsync(botClient, update))
             {
+                _logger.LogWarning("Update was invalid. Info: {@UpdateInfo}", update);
                 return;
             }
 
             var chatId = update!.Message!.Chat.Id;
-            var commandText = update!.Message!.Text;
+            var commandText = update?.Message?.Text;
 
             try
             {
+                // Grab all needed info for further procesing.
                 var message = BotMessage.ToModel(update);
+
+                // Find suitable command.
                 var command = GetCommand(commandText);
+
+                // Process command.
                 await command.ProcessAsync(message, cancellationToken);
             }
             catch (ArgumentOutOfRangeException ex)
             {
                 _logger.LogError("Error while command execution: {message}", ex.Message);
-                await botClient.SendTextMessageAsync(chatId, $"There is no such available command - {commandText}. Please take a look at the menu.", cancellationToken: cancellationToken);
+                await botClient.SendTextMessageAsync(chatId, $"There is no such available command - {commandText}. Please take a look at the Menu.", cancellationToken: cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
             }
         }
 
         async Task<bool> ValidateMessageAsync(ITelegramBotClient botClient, Update update)
         {
-            var messageInfo = JsonSerializer.Serialize(update?.Message);
+            if (update.Message is Message message)
+            {
+                return await ValidateTextMessageAsync(botClient, message);
+            }
+            else if (update.CallbackQuery is CallbackQuery query)
+            {
+                return await ValidateCallbackQueryAsync(botClient, query);
+            }
+
+            return false; // skip any other actions.
+        }
+
+        private static Task<bool> ValidateCallbackQueryAsync(ITelegramBotClient botClient, CallbackQuery query)
+        {
+            if (query.Data is null || query.From is null)
+            {
+                return Task.FromResult(false);
+            }
+            return Task.FromResult(true);
+        }
+
+        async Task<bool> ValidateTextMessageAsync(ITelegramBotClient botClient, Message message)
+        {
+            var messageInfo = JsonSerializer.Serialize(message);
             // High-level validation.
             if (
-                update is null || // no info came at all.
-                update.Message is null || // no message info.
-                update.Message.Chat is null || // no chat info.
-                update.Message.Chat.Id < 0 // no chat identifier.
+                message.Chat is null || // no chat info.
+                message.Chat.Id < 0 // no chat identifier.
                 )
             {
                 _logger.LogError("Some of the information is missing: {messageInfo}", messageInfo);
@@ -75,15 +106,15 @@
             }
 
             // Low-level validation.
-            var message = update.Message.Text;
+            var text = message.Text;
             if (
-                string.IsNullOrWhiteSpace(message) || // no command was passed.
-                (message.Split(' ').Length > 1 && !message.Contains(CommandConstants.NEW_DEFECT)) // the command format is definitely not correct.
+                string.IsNullOrWhiteSpace(text) || // no command was passed.
+                (text.Split(' ').Length > 1 && !text.Contains(CommandConstants.NEW_DEFECT)) // the command format is definitely not correct.
                 )
             {
                 _logger.LogError("The command message was incorrect: {messageInfo}", messageInfo);
-                var chatId = update.Message.Chat.Id;
-                await botClient.SendTextMessageAsync(chatId, "Please send a valid command. You may find them in the menu");
+                var chatId = message.Chat.Id;
+                await botClient.SendTextMessageAsync(chatId, "Please send a valid command. You may find them in the Menu");
                 return false;
             }
 
@@ -92,9 +123,14 @@
 
         IBotCommand GetCommand(string? command) => command switch
         {
+            // Start command.
             CommandConstants.START => ResolveCommand<StartCommand>(),
+            // RegisterMe command.
             CommandConstants.REGISTER_ME => ResolveCommand<RegisterMeCommand>(),
+            // NewDefect command.
             var c when c.Contains(CommandConstants.NEW_DEFECT) => ResolveCommand<NewDefectCommand>(),
+            // SetDefectStatus command.
+            CommandConstants.SET_DEFECT_STATUS => ResolveCommand<SetDefectStatusCommand>(),
             _ => throw new ArgumentOutOfRangeException(nameof(command)),
         };
 

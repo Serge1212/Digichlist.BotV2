@@ -50,9 +50,9 @@ namespace Digichlist.Bot.Commands
         {
             var user = new User
             {
-                FirstName = message.Message?.From?.FirstName ?? "N/A",
-                LastName = message.Message?.From?.LastName ?? "N/A",
-                Username = message.Message?.From?.Username ?? "N/A",
+                FirstName = message.FirstName ?? "N/A",
+                LastName = message.LastName ?? "N/A",
+                Username = message.Username ?? "N/A",
                 ChatId = message.ChatId
             };
 
