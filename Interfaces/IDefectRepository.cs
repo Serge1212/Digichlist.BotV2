@@ -6,9 +6,14 @@
     public interface IDefectRepository
     {
         /// <summary>
+        /// Gets a user's assigned defect by specified chat and defect identifiers.
+        /// </summary>
+        Task<Defect> GetSingleAsync(int defectId);
+
+        /// <summary>
         /// Gets a user's assigned defects by specified chat identifier.
         /// </summary>
-        IEnumerable<Defect> GetDefectsByChatId(long chatId);
+        IEnumerable<Defect> GetManyByChatId(long chatId);
 
         /// <summary>
         /// Saves a brand new defect.

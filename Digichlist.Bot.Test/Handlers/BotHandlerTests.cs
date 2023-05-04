@@ -36,8 +36,8 @@ namespace Digichlist.Bot.Test.Handlers
         }
 
         [Theory]
-        [InlineData(CommandConstants.START, typeof(StartCommand))]
-        [InlineData(CommandConstants.REGISTER_ME, typeof(RegisterMeCommand))]
+        [InlineData(Configuration.BotCommands.START, typeof(StartCommand))]
+        [InlineData(Configuration.BotCommands.REGISTER_ME, typeof(RegisterMeCommand))]
         public async Task HandleUpdateAsync_ShouldProcess_AnyCommand(string command, Type commandType)
         {
             // Arrange.

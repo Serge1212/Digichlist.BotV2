@@ -17,6 +17,7 @@ var builder = new HostBuilder()
         // Repos.
         services.AddTransient<IUserRepository, UserRepository>();
         services.AddTransient<IDefectRepository, DefectRepository>();
+        services.AddTransient<ICommandTaskRepository, CommandTaskRepository>();
 
         services.AddDbContext<DigichlistContext>(options =>
         {
@@ -66,7 +67,7 @@ try
     var receiverOps = new ReceiverOptions
     {
         ThrowPendingUpdates = true, // Will ignore all preceding messages.
-        AllowedUpdates = AllowedUpdates.GetAllowedUpdates() // Define updates that this bot can handle.
+        AllowedUpdates = AllowedUpdates.GetAllowedUpdates(), // Define updates that this bot can handle.
     };
 
     botClient.StartReceiving(updateHandler, receiverOptions: receiverOps);

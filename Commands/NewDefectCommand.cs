@@ -1,7 +1,7 @@
 ﻿namespace Digichlist.Bot.Commands
 {
     /// <summary>
-    /// The NewDefect command that works for <see cref="CommandConstants.NEW_DEFECT"/> command.
+    /// The NewDefect command that works for <see cref="Configuration.BotCommands.NEW_DEFECT"/> command.
     /// Stores the defect provided by a user.
     /// </summary>
     public class NewDefectCommand : IBotCommand

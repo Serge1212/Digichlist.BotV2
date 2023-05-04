@@ -1,7 +1,7 @@
 ﻿namespace Digichlist.Bot.Commands
 {
     /// <summary>
-    /// The Start command that works for <see cref="CommandConstants.START"/> command.
+    /// The Start command that works for <see cref="Configuration.BotCommands.START"/> command.
     /// </summary>
     public class StartCommand : IBotCommand
     {

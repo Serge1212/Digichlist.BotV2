@@ -14,5 +14,10 @@
         /// The number of buttons to be displayed on a single row in Telegram keyboard.
         /// </summary>
         public const int BUTTONS_ROW_COUNT = 3;
+
+        /// <summary>
+        /// The seconds for ongoings tasks after which the ongoing task is considered to be expired.
+        /// </summary>
+        public const int COMMAND_TASK_EXPIRATION_SECONDS = 60;
     }
 }

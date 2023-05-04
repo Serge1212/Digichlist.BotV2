@@ -109,7 +109,7 @@
             var text = message.Text;
             if (
                 string.IsNullOrWhiteSpace(text) || // no command was passed.
-                (text.Split(' ').Length > 1 && !text.Contains(CommandConstants.NEW_DEFECT)) // the command format is definitely not correct.
+                (text.Split(' ').Length > 1 && !text.Contains(Configuration.BotCommands.NEW_DEFECT)) // the command format is definitely not correct.
                 )
             {
                 _logger.LogError("The command message was incorrect: {messageInfo}", messageInfo);
@@ -124,13 +124,13 @@
         IBotCommand GetCommand(string? command) => command switch
         {
             // Start command.
-            CommandConstants.START => ResolveCommand<StartCommand>(),
+            Configuration.BotCommands.START => ResolveCommand<StartCommand>(),
             // RegisterMe command.
-            CommandConstants.REGISTER_ME => ResolveCommand<RegisterMeCommand>(),
+            Configuration.BotCommands.REGISTER_ME => ResolveCommand<RegisterMeCommand>(),
             // NewDefect command.
-            var c when c.Contains(CommandConstants.NEW_DEFECT) => ResolveCommand<NewDefectCommand>(),
+            var c when c.Contains(Configuration.BotCommands.NEW_DEFECT) => ResolveCommand<NewDefectCommand>(),
             // SetDefectStatus command.
-            CommandConstants.SET_DEFECT_STATUS => ResolveCommand<SetDefectStatusCommand>(),
+            Configuration.BotCommands.SET_DEFECT_STATUS => ResolveCommand<SetDefectStatusCommand>(),
             _ => throw new ArgumentOutOfRangeException(nameof(command)),
         };
 

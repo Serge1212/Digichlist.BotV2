@@ -1,14 +1,13 @@
 ﻿namespace Digichlist.Bot.Models.Entities
 {
     /// <summary>
-    /// The information about a command task.
     /// Contains information about ongoing task that is split by steps.
     /// Is essentially a context for a sophisticated flows.
     /// </summary>
-    public class CommandTaskInfo
+    public class CommandTask
     {
         /// <summary>
-        /// The command task information unique identifier.
+        /// The command task unique identifier.
         /// </summary>
         public int Id { get; set; }
 
@@ -17,15 +16,14 @@
         /// </summary>
         public string CommandName { get; set; }
 
-
         /// <summary>
         /// The related user's chat identifier.
         /// </summary>
-        public int ChatId { get; set; }
+        public long ChatId { get; set; }
 
         /// <summary>
         /// The defect's unique identifier.
-        /// Null means that there is yet specified defect.
+        /// Null means that there is no yet specified defect.
         /// </summary>
         public int? DefectId { get; set; }
 

@@ -3,7 +3,7 @@
 namespace Digichlist.Bot.Commands
 {
     /// <summary>
-    /// The RegisterMe command that works for <see cref="CommandConstants.REGISTER_ME"/> command.
+    /// The RegisterMe command that works for <see cref="Configuration.BotCommands.REGISTER_ME"/> command.
     /// Saves registration request.
     /// </summary>
     public class RegisterMeCommand : IBotCommand

@@ -3,7 +3,7 @@
     /// <summary>
     /// The class that contains information about all available bot commands.
     /// </summary>
-    public class CommandConstants
+    public class BotCommands
     {
         /// <summary>
         /// The "start" command. Shows essential information about bot.

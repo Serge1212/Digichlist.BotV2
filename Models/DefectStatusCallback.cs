@@ -19,23 +19,17 @@
         ///// The desired status for the specified defect.
         ///// Null means that a user hasn't yet a chance to select the desired status.
         ///// </summary>
-        //public DefectStatus? Status { get; set; }
-        //
-        ///// <summary>
-        ///// The date and time this callback is valid for further processing.
-        ///// </summary>
-        //public DateTime ExpirationDate { get; set; }
-        //
+        public DefectStatus? Status { get; set; }
+
         ///// <summary>
         ///// Fills up all callback's info.
         ///// </summary>
-        public static DefectStatusCallback ToModel(long chatId, Defect defect)
+        public static DefectStatusCallback ToModel(int defectId, string command)
         {
             return new DefectStatusCallback
             {
-                Command = "/setdefectstatus",
-                DefectId = defect.Id,
-                //ExpirationDate = DateTime.Now.AddMinutes(30),
+                Command = command,
+                DefectId = defectId,
             };
         }
     }
