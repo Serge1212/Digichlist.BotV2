@@ -40,12 +40,24 @@
             // Exit when the incoming information is invalid/missing.
             if(!await ValidateMessageAsync(botClient, update))
             {
-                _logger.LogWarning("Update was invalid. Info: {@UpdateInfo}", update);
+                _logger.LogError("Update was invalid. Info: {@Update}", update);
                 return;
             }
 
-            var chatId = update!.Message!.Chat.Id;
+            var chatId = update?.Message?.Chat?.Id ?? update?.CallbackQuery?.From?.Id;
             var commandText = update?.Message?.Text;
+
+            if (commandText is null) // it's a callback query then.
+            {
+                var data = JsonSerializer.Deserialize<CommandCallback>(update?.CallbackQuery?.Data);
+                commandText = data?.Command;
+
+                if (commandText == null)
+                {
+                    _logger.LogWarning("Could not get a command from user input. The processing will not happen.");
+                    return;
+                }
+            }
 
             try
             {
@@ -71,15 +83,14 @@
 
         async Task<bool> ValidateMessageAsync(ITelegramBotClient botClient, Update update)
         {
-            if (update.Message is Message message)
+            if (update?.Message is Message message)
             {
                 return await ValidateTextMessageAsync(botClient, message);
             }
-            else if (update.CallbackQuery is CallbackQuery query)
+            else if (update?.CallbackQuery is CallbackQuery query)
             {
                 return await ValidateCallbackQueryAsync(botClient, query);
             }
-
             return false; // skip any other actions.
         }
 
@@ -129,9 +140,12 @@
             Configuration.BotCommands.REGISTER_ME => ResolveCommand<RegisterMeCommand>(),
             // NewDefect command.
             var c when c.Contains(Configuration.BotCommands.NEW_DEFECT) => ResolveCommand<NewDefectCommand>(),
+            // Cancel command.
+            Configuration.BotCommands.CANCEL => ResolveCommand<CancelCommand>(),
             // SetDefectStatus command.
             Configuration.BotCommands.SET_DEFECT_STATUS => ResolveCommand<SetDefectStatusCommand>(),
             _ => throw new ArgumentOutOfRangeException(nameof(command)),
+
         };
 
         IBotCommand ResolveCommand<T>() where T : IBotCommand

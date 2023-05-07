@@ -11,6 +11,11 @@
         public long ChatId { get; set; }
 
         /// <summary>
+        /// TODO: Explain.
+        /// </summary>
+        public int? MessageId { get; set; }
+
+        /// <summary>
         /// The specified passed data.
         /// Null means that there is no data hence it's not a <see cref="Update.CallbackQuery"/>.
         /// </summary>
@@ -60,6 +65,7 @@
             return new BotMessage
             {
                 ChatId = userInfo.Id,
+                MessageId = update?.CallbackQuery?.Message?.MessageId,
                 Data = update?.CallbackQuery?.Data,
                 Text = update?.Message?.Text,
                 FirstName = userInfo.FirstName,

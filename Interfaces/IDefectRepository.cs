@@ -18,6 +18,11 @@
         /// <summary>
         /// Saves a brand new defect.
         /// </summary>
-        Task SaveAsync(Defect defect);
+        Task AddAsync(Defect defect);
+
+        /// <summary>
+        /// Updates existing defect.
+        /// </summary>
+        Task UpdateAsync(Defect defect);
     }
 }

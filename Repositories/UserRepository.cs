@@ -16,7 +16,10 @@ namespace Digichlist.Bot.Repositories
         }
 
         /// <inheritdoc />
-        public async Task<User?> GetByChatIdAsync(long chatId) => await _context.Users.SingleOrDefaultAsync(u => u.ChatId == chatId);
+        public async Task<User?> GetByChatIdAsync(long chatId) =>
+            await _context.Users
+            .Include(u => u.Role)
+            .SingleOrDefaultAsync(u => u.ChatId == chatId);
 
         /// <inheritdoc />
         public async Task SaveUserAsync(User user)

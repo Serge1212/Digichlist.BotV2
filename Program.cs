@@ -14,6 +14,7 @@ var builder = new HostBuilder()
         services.AddTransient<RegisterMeCommand>();
         services.AddTransient<NewDefectCommand>();
         services.AddTransient<SetDefectStatusCommand>();
+        services.AddTransient<CancelCommand>();
         // Repos.
         services.AddTransient<IUserRepository, UserRepository>();
         services.AddTransient<IDefectRepository, DefectRepository>();

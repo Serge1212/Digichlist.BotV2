@@ -38,19 +38,20 @@
 
             var incomingMsg = message.Text;
             var defectInfo = incomingMsg.Split(' ');
+
+            if (defectInfo.Length < 3)
+            {
+                await NotifyDefectInfoInvalidAsync(chatId, cancellationToken);
+                return;
+            }
+
             var hasRoomNumber = int.TryParse(defectInfo[1], out int roomNumber);
             var description = string.Join(' ', defectInfo[2..]);
 
 
-            if (!hasRoomNumber ||
-                defectInfo.Length < 3 ||
-                string.IsNullOrWhiteSpace(description)
-                )
+            if (!hasRoomNumber || string.IsNullOrWhiteSpace(description))
             {
-                await _botClient.SendTextMessageAsync(
-                    chatId,
-                    "Please send a new defect in a following format: /newdefect [room number] [description]",
-                    cancellationToken: cancellationToken);
+                await NotifyDefectInfoInvalidAsync(chatId, cancellationToken);
                 return;
             }
 
@@ -60,9 +61,20 @@
                 Description = description,
                 CreatedBy = user.GetName(),
                 CreatedAt = DateTime.Now,
+                Status = (int)DefectStatus.Opened,
             };
 
-            await _defectRepository.SaveAsync(defect);
+            await _defectRepository.AddAsync(defect);
+
+            await _botClient.SendTextMessageAsync(chatId, "The defect was successfully published!", cancellationToken: cancellationToken);
+        }
+
+        async Task NotifyDefectInfoInvalidAsync(long chatId, CancellationToken cancellationToken)
+        {
+            await _botClient.SendTextMessageAsync(
+                    chatId,
+                    "Please send a new defect in a following format: /newdefect [room number] [description]",
+                    cancellationToken: cancellationToken);
         }
     }
 }

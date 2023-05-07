@@ -56,7 +56,7 @@ namespace Digichlist.Bot.Test.Handlers
         public async Task HandleUpdateAsync_ShouldNotProcessCommand_MissingUpdate(Update update)
         {
             // Arrange.
-            var expectedMessagePart = "information is missing";
+            var expectedMessagePart = "Update was invalid.";
 
             // Act.
             await _handler.HandleUpdateAsync(_botClient.Object, update, CancellationToken.None);
@@ -135,6 +135,13 @@ namespace Digichlist.Bot.Test.Handlers
                 Chat = new Chat
                 {
                     Id = chatId,
+                },
+                From = new User
+                {
+                    Id = It.IsAny<long>(),
+                    FirstName = It.IsAny<string>(),
+                    LastName = It.IsAny<string>(),
+                    Username = It.IsAny<string>(),
                 },
                 Text = text,
             }

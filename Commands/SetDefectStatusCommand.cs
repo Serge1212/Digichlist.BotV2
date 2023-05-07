@@ -5,21 +5,21 @@
         readonly ITelegramBotClient _botClient;
         readonly IUserRepository _userRepository;
         readonly IDefectRepository _defectRepository;
-        readonly ICommandTaskRepository _commandTaskInfoRepository;
+        readonly ICommandTaskRepository _commandTaskRepository;
         readonly ILogger _logger;
 
         public SetDefectStatusCommand(
             ITelegramBotClient botClient,
             IUserRepository userRepository,
             IDefectRepository defectRepository,
-            ICommandTaskRepository commandTaskInfoRepository,
+            ICommandTaskRepository commandTaskRepository,
             ILogger<SetDefectStatusCommand> logger
             )
         {
             _botClient = botClient;
             _userRepository = userRepository;
             _defectRepository = defectRepository;
-            _commandTaskInfoRepository = commandTaskInfoRepository;
+            _commandTaskRepository = commandTaskRepository;
             _logger = logger;
         }
 
@@ -28,17 +28,62 @@
         {
             var chatId = message.ChatId;
 
-            // Try settle previous command task.
-            if (!await TrySettleOngoingTaskAsync(chatId))
+            // Role check is performed for each subflow.
+            if (!await CheckUserRole(chatId, cancellationToken))
             {
-                await _botClient.SendTextMessageAsync(
-                    chatId,
-                    "You have uncompleted commands that cannot be continued. Please enter /cancel to close them. Then you can start fresh.",
-                    cancellationToken: cancellationToken);
                 return;
             }
 
-            if (!await CheckUserRole(chatId, cancellationToken))
+            // Define and execute command subflow.
+            if (message.Text is not null) // The user initialized setting status.
+            {
+                await ProcessInitializedCommandAsync(message, cancellationToken);
+            }
+            else if (message.Data is string rawData) // The task is ongoing, the user inputs more data (e.g defect or status info).
+            {
+                await ProcessOngoingCommandAsync(message, rawData, cancellationToken);
+            }
+        }
+
+        /// <summary>
+        /// Tries to settle the ongoing command tasks for this user.
+        /// </summary>
+        /// <returns>
+        /// <c>true</c> when no ongoing tasks for this user.
+        /// <c>false</c> when there are ongoing tasks for this user that cannot be settled.
+        /// </returns>
+        async Task<bool> TrySettleOngoingTaskAsync(long chatId, CancellationToken cancellationToken)
+        {
+            var commandTask = await _commandTaskRepository.GetAsync(chatId);
+
+            if (commandTask is null)
+            {
+                return true;
+            }
+
+            var now = DateTime.Now;
+            if (commandTask.ExpiresAt < now)
+            {
+                commandTask.ClosedAt = now;
+                await _commandTaskRepository.UpdateAsync(commandTask);
+                _logger.LogDebug("Found and settled expired ongoing task for chat #{chatId}. Ongoing task info: {@commandTask}", chatId, commandTask);
+
+                return true;
+            }
+
+            await _botClient.SendTextMessageAsync(
+                    chatId,
+                    "You have uncompleted commands that cannot be continued. Please enter /cancel to close them. Then you can start fresh.",
+                    cancellationToken: cancellationToken);
+            return false;
+        }
+
+        async Task ProcessInitializedCommandAsync(BotMessage message, CancellationToken cancellationToken)
+        {
+            var chatId = message.ChatId;
+
+            // Try settle previous command task.
+            if (!await TrySettleOngoingTaskAsync(chatId, cancellationToken))
             {
                 return;
             }
@@ -50,31 +95,84 @@
                 CommandName = BotCommands.SET_DEFECT_STATUS,
                 ExpiresAt = DateTime.Now.AddSeconds(Constants.COMMAND_TASK_EXPIRATION_SECONDS)
             };
-            await _commandTaskInfoRepository.AddAsync(ongoingTask);
+            await _commandTaskRepository.AddAsync(ongoingTask);
 
-            // Define and execute command subflow.
-            if (message.Text is not null) // The user initialized setting status.
+            // Send keyboard.
+            await SendDefectKeyboardAsync(message, cancellationToken);
+        }
+
+        async Task ProcessOngoingCommandAsync(BotMessage message, string rawData, CancellationToken cancellationToken)
+        {
+            var chatId = message.ChatId;
+            var commandTask = await _commandTaskRepository.GetAsync(chatId);
+            var data = JsonSerializer.Deserialize<CommandCallback>(rawData);
+
+            if (commandTask is null)
             {
-                await SendDefectKeyboardAsync(message);
+                throw new InvalidOperationException("Cannot process further without related command task.");
             }
-            else if (message.Data is string rawData)
-            {
-                var data = JsonSerializer.Deserialize<DefectStatusCallback>(rawData);
-                if (data is null)
-                {
-                    _logger.LogError("Cannot deserialize incoming callback data: {rawData}. The command cannot be processed further.", rawData);
-                    await _botClient.SendTextMessageAsync(
-                        chatId,
-                        "Something went wrong. Please contact administrators.",
-                        cancellationToken: cancellationToken);
 
+            //if (data?.TaskId != commandTask.Id)
+            //{
+            //    throw new InvalidOperationException("The found command task is not the same for callback's identifier.");
+            //}
+
+            if (data is null)
+            {
+                _logger.LogError("Cannot deserialize incoming callback data: {rawData}. The command cannot be processed further.", rawData);
+                await _botClient.SendTextMessageAsync(
+                    chatId,
+                    "Something went wrong. Please contact administrators.",
+                    cancellationToken: cancellationToken);
+
+                return;
+            }
+
+            if (!await ValidateIncomingDefectAsync(chatId, data.DefectId, cancellationToken))
+            {
+                return;
+            }
+
+            if (data.Status == null) // The user picked the defect.
+            {
+                // Drop the message with defects.
+                await _botClient.DeleteMessageAsync(chatId, message.MessageId.Value, cancellationToken: cancellationToken);
+
+                // Send keyboard with statuses.
+                commandTask.DefectId = data.DefectId;
+                await _commandTaskRepository.UpdateAsync(commandTask);
+                await SendStatusKeyboardAsync(chatId, data.DefectId, cancellationToken);
+            }
+            else if (data.Status != null) // The user picked the status.
+            {
+                if (data.DefectId < 1 || !data.Status.HasValue)
+                {
+                    _logger.LogError("Expected status info on this step, but incoming info was: {rawData}. The command cannot be processed further.", rawData);
+                    await _botClient.SendTextMessageAsync(
+                    chatId,
+                    "Something went wrong. Please contact administrators.",
+                    cancellationToken: cancellationToken);
+                    
                     return;
                 }
 
-                if (data.Status == null && await ValidateIncomingDefectAsync(chatId, data.DefectId, cancellationToken)) // The user picked the defect.
-                {
-                    await SendStatusKeyboardAsync();
-                }
+                // Complete command task.
+                commandTask.Status = (int)data.Status.Value;
+                commandTask.ClosedAt = DateTime.Now;
+                await _commandTaskRepository.UpdateAsync(commandTask);
+
+                // Set new status.
+                var defect = await _defectRepository.GetSingleAsync(data.DefectId);
+                defect.Status = (int)data.Status;
+                await _defectRepository.UpdateAsync(defect);
+
+                // Notify user on status changed.
+                await _botClient.EditMessageTextAsync(chatId, message.MessageId.Value, "The status was successfully changed!", cancellationToken: cancellationToken);
+
+            }
+            else
+            {
+                _logger.LogWarning("Nothing was processed for message {@message}", message);
             }
         }
 
@@ -94,7 +192,7 @@
             return true;
         }
 
-        async Task SendDefectKeyboardAsync(BotMessage message)
+        async Task SendDefectKeyboardAsync(BotMessage message, CancellationToken cancellationToken)
         {
             var chatId = message.ChatId;
             // Generate a keyboard with defects.
@@ -107,6 +205,26 @@
 
             // Send keyboard.
             await _botClient.SendTextMessageAsync(message.ChatId, "Please select the defect to change its status.", replyMarkup: keyboard, cancellationToken: cancellationToken);
+        }
+
+        async Task SendStatusKeyboardAsync(long chatId, int defectId, CancellationToken cancellationToken)
+        {
+            // Grab all statuses.
+            var statuses = new List<(string Name, int Signifier)>
+            {
+                ("Opened", (int)DefectStatus.Opened),
+                ("Fixing",(int)DefectStatus.Fixing),
+                ("Eliminated", (int)DefectStatus.Eliminated),
+            };
+
+            // Get all keys.
+            var keys = statuses.Select(status => new InlineKeyboardButton(status.Name) { CallbackData = JsonSerializer.Serialize(new { Command = BotCommands.SET_DEFECT_STATUS, Status = status.Signifier, DefectId = defectId}) });
+
+            // Generate keyboard.
+            var keyboard = new InlineKeyboardMarkup(keys);
+
+            // Send keyboard.
+            await _botClient.SendTextMessageAsync(chatId, "Please select the status.", replyMarkup: keyboard, cancellationToken: cancellationToken);
         }
 
         async Task<bool> ValidateIncomingDefectAsync(long chatId, int defectId, CancellationToken cancellationToken)
@@ -136,48 +254,7 @@
         InlineKeyboardMarkup GenerateKeyboardAsync(long chatId)
         {
             // Get all related defects.
-            //var defects = _defectRepository.GetDefectsByChatId(chatId);
-            //TODO: remove temp stub when not needed.
-            var defectsTemp = new List<Defect>
-            {
-                new Defect
-                {
-                    Id = 1,
-                    RoomNumber = 1,
-                    Description = "broken something in room",
-                },
-                new Defect
-                {
-                    Id = 2,
-                    RoomNumber = 2,
-                    Description = "broken something in room",
-                },
-                new Defect
-                {
-                    Id = 3,
-                    RoomNumber = 3,
-                    Description = "broken something in room",
-                },
-                new Defect
-                {
-                    Id = 4,
-                    RoomNumber = 4,
-                    Description = "broken something in room",
-                },
-                new Defect
-                {
-                    Id = 5,
-                    RoomNumber = 5,
-                    Description = "broken something in room",
-                },
-                new Defect
-                {
-                    Id = 6,
-                    RoomNumber = 6,
-                    Description = "broken something in room",
-                },
-            };
-            var defects = defectsTemp.Select(d => d);
+            var defects = _defectRepository.GetManyByChatId(chatId);
 
             if (!defects.Any())
             {
@@ -185,7 +262,7 @@
             }
 
             // Get all keys.
-            var keys = defects.Select(d => new InlineKeyboardButton(GetBriefDetails(d)) { CallbackData = GenerateCallback(chatId, d) });
+            var keys = defects.Select(d => new InlineKeyboardButton(GetBriefDetails(d)) { CallbackData = JsonSerializer.Serialize(new { Command = BotCommands.SET_DEFECT_STATUS, DefectId = d.Id }) });
 
             // Generate a keyboard.
             var keyboard = keys
@@ -196,39 +273,14 @@
             return new InlineKeyboardMarkup(keyboard);
         }
 
-        string GetBriefDetails(Defect defect) =>
-            string.Concat($"Room {defect.RoomNumber}: {defect.Description[..20]}...");
-
-        static string GenerateCallback(long chatId, Defect defect) =>
-           JsonSerializer.Serialize(DefectStatusCallback.ToModel(defect.Id, BotCommands.SET_DEFECT_STATUS));
-
-        /// <summary>
-        /// Tries to settle the ongoing command tasks for this user.
-        /// </summary>
-        /// <returns>
-        /// <c>true</c> when no ongoing tasks for this user.
-        /// <c>false</c> when there are ongoing tasks for this user that cannot be settled.
-        /// </returns>
-        async Task<bool> TrySettleOngoingTaskAsync(long chatId)
+        string GetBriefDetails(Defect defect)
         {
-            var commandTask = await _commandTaskInfoRepository.GetAsync(chatId);
-
-            if (commandTask is null)
+            if (defect.Description.Length > 20)
             {
-                return true;
+                defect.Description = $"{defect.Description[..20]}...";
             }
 
-            var now = DateTime.Now;
-            if (commandTask.ExpiresAt < now)
-            {
-                commandTask.ClosedAt = now;
-                await _commandTaskInfoRepository.UpdateAsync(commandTask);
-                _logger.LogDebug("Found and settled expired ongoing task for chat #{chatId}. Ongoing task info: {@commandTask}", chatId, commandTask);
-
-                return true;
-            }
-
-            return false;
+            return string.Concat($"Room {defect.RoomNumber}: {defect.Description}");
         }
     }
 }

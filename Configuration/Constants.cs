@@ -18,6 +18,7 @@
         /// <summary>
         /// The seconds for ongoings tasks after which the ongoing task is considered to be expired.
         /// </summary>
+        //public const int COMMAND_TASK_EXPIRATION_SECONDS = 1; // TODO: set to 60 after debug
         public const int COMMAND_TASK_EXPIRATION_SECONDS = 60;
     }
 }

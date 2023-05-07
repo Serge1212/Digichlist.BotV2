@@ -22,9 +22,15 @@
                 .Where(d => d.AssignedWorker.ChatId == chatId && d.ClosedAt == null);
 
         /// <inheritdoc />
-        public async Task SaveAsync(Defect defect)
+        public async Task AddAsync(Defect defect)
         {
             await _context.Defects.AddAsync(defect);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateAsync(Defect defect)
+        {
+            _context.Update(defect);
             await _context.SaveChangesAsync();
         }
     }

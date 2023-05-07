@@ -24,5 +24,10 @@
         /// The "setdefectstatus" command. Used to set a defect status.
         /// </summary>
         public const string SET_DEFECT_STATUS = "/setdefectstatus";
+
+        /// <summary>
+        /// TODO: explain
+        /// </summary>
+        public const string CANCEL = "/cancel";
     }
 }

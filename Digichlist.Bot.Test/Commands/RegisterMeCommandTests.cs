@@ -36,10 +36,6 @@ namespace Digichlist.Bot.Test.Commands
             var message = new BotMessage
             {
                 ChatId = expectedChatId,
-                Message = new Telegram.Bot.Types.Message
-                {
-                    From = new Telegram.Bot.Types.User()
-                }
             };
 
             _userRepositoryMock

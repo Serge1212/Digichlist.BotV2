@@ -49,17 +49,14 @@ namespace Digichlist.Bot.Test.Commands
             var message = new BotMessage
             {
                 ChatId = expectedChatId,
-                Message = new Telegram.Bot.Types.Message
-                {
-                    Text = msg
-                },
+                Text = msg,
             };
 
             // Act.
             await _command.ProcessAsync(message, CancellationToken.None);
 
             // Assert.
-            _defectRepositoryMock.Verify(d => d.SaveAsync(It.Is<Defect>(d =>
+            _defectRepositoryMock.Verify(d => d.AddAsync(It.Is<Defect>(d =>
             d.RoomNumber == roomNumberPart &&
             d.Description == descriptionPart &&
             d.CreatedBy!.Contains(expectedFirstName)
@@ -93,17 +90,14 @@ namespace Digichlist.Bot.Test.Commands
             var message = new BotMessage
             {
                 ChatId = expectedChatId,
-                Message = new Telegram.Bot.Types.Message
-                {
-                    Text = msg
-                },
+                Text = msg,
             };
 
             // Act.
             await _command.ProcessAsync(message, CancellationToken.None);
 
             // Assert.
-            _defectRepositoryMock.Verify(d => d.SaveAsync(It.IsAny<Defect>()), Times.Never);
+            _defectRepositoryMock.Verify(d => d.AddAsync(It.IsAny<Defect>()), Times.Never);
             _botClientMock.Verify(b => b.MakeRequestAsync(It.Is<SendMessageRequest>(m => m.ChatId == expectedChatId && m.Text.Contains(expectedMessagePart)), CancellationToken.None));
         }
 
@@ -129,17 +123,14 @@ namespace Digichlist.Bot.Test.Commands
             var message = new BotMessage
             {
                 ChatId = expectedChatId,
-                Message = new Telegram.Bot.Types.Message
-                {
-                    Text = "/newdefect 12 description",
-                },
+                Text = "/newdefect 12 description",
             };
 
             // Act.
             await _command.ProcessAsync(message, CancellationToken.None);
 
             // Assert.
-            _defectRepositoryMock.Verify(d => d.SaveAsync(It.IsAny<Defect>()), Times.Never);
+            _defectRepositoryMock.Verify(d => d.AddAsync(It.IsAny<Defect>()), Times.Never);
             _botClientMock.Verify(b => b.MakeRequestAsync(It.Is<SendMessageRequest>(m => m.ChatId == expectedChatId && m.Text.Contains(expectedMessagePart)), CancellationToken.None));
         }
 
@@ -162,17 +153,14 @@ namespace Digichlist.Bot.Test.Commands
             var message = new BotMessage
             {
                 ChatId = expectedChatId,
-                Message = new Telegram.Bot.Types.Message
-                {
-                    Text = "/newdefect 12 description",
-                },
+                Text = "/newdefect 12 description",
             };
 
             // Act.
             await _command.ProcessAsync(message, CancellationToken.None);
 
             // Assert.
-            _defectRepositoryMock.Verify(d => d.SaveAsync(It.IsAny<Defect>()), Times.Never);
+            _defectRepositoryMock.Verify(d => d.AddAsync(It.IsAny<Defect>()), Times.Never);
             _botClientMock.Verify(b => b.MakeRequestAsync(It.Is<SendMessageRequest>(m => m.ChatId == expectedChatId && m.Text.Contains(expectedMessagePart)), CancellationToken.None));
         }
 
@@ -190,17 +178,14 @@ namespace Digichlist.Bot.Test.Commands
             var message = new BotMessage
             {
                 ChatId = expectedChatId,
-                Message = new Telegram.Bot.Types.Message
-                {
-                    Text = "/newdefect 12 description",
-                },
+                Text = "/newdefect 12 description",
             };
 
             // Act.
             await _command.ProcessAsync(message, CancellationToken.None);
 
             // Assert.
-            _defectRepositoryMock.Verify(d => d.SaveAsync(It.IsAny<Defect>()), Times.Never);
+            _defectRepositoryMock.Verify(d => d.AddAsync(It.IsAny<Defect>()), Times.Never);
             _botClientMock.Verify(b => b.MakeRequestAsync(It.Is<SendMessageRequest>(m => m.ChatId == expectedChatId && m.Text.Contains(expectedMessagePart)), CancellationToken.None));
         }
     }
